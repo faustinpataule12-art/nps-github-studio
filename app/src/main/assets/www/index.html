@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>NPS GitHub Studio</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --bg-2:#0a0d12;
+    --card:#161b22;
+    --card-hover:#1c2129;
+    --border:#30363d;
+    --text:#e6edf3;
+    --text-muted:#8b949e;
+    --accent:#58a6ff;
+    --accent-soft:rgba(88,166,255,.12);
+    --ok:#3fb950;
+    --ok-soft:rgba(63,185,80,.13);
+    --danger:#f85149;
+    --danger-soft:rgba(248,81,73,.13);
+    --warn:#d29922;
+    --warn-soft:rgba(210,153,34,.13);
+    --radius:10px;
+    --radius-sm:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden;font-size:15px;}
+  *::-webkit-scrollbar{width:8px;}
+  *::-webkit-scrollbar-thumb{background:#293038;border-radius:8px;}
+  svg{display:block;flex-shrink:0;}
+
+  /* App bar */
+  .app-bar{flex-shrink:0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--card);border-bottom:1px solid var(--border);}
+  .brand{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:700;color:var(--text);}
+  .brand-ico{width:26px;height:26px;border-radius:7px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:#3a414b;flex-shrink:0;}
+  .status-dot.on{background:var(--ok);}
+  .icon-btn,.account-btn{background:var(--bg);border:1px solid var(--border);color:var(--text-muted);width:34px;height:34px;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.12s;}
+  .icon-btn:hover,.account-btn:hover{color:var(--text);border-color:#484f58;}
+  .icon-btn:active,.account-btn:active{transform:scale(.94);}
+  .account-btn{border-radius:50%;overflow:hidden;}
+  .account-btn img{width:100%;height:100%;object-fit:cover;}
+
+  /* Screen header */
+  .screen-header{flex-shrink:0;padding:10px 14px;display:flex;align-items:center;gap:10px;background:var(--bg);border-bottom:1px solid var(--border);min-height:50px;}
+  .back-btn{background:transparent;border:none;color:var(--text-muted);width:32px;height:32px;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .back-btn:hover{color:var(--text);background:var(--card);}
+  .screen-title-wrap{flex:1;overflow:hidden;}
+  .screen-title{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .screen-subtitle{font-size:11.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+  .screen-actions{display:flex;gap:6px;flex-shrink:0;}
+
+  /* Screen body */
+  .screen-body{flex:1;overflow-y:auto;padding:12px 14px;padding-bottom:64px;}
+  .screen-body.anim-in{animation:slideIn .18s ease;}
+  .screen-body.anim-back{animation:slideBack .18s ease;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(10px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes slideBack{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
+
+  .hero{text-align:center;padding:56px 20px 30px;}
+  .hero-ico{width:52px;height:52px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .hero h2{font-size:17px;font-weight:700;margin-bottom:6px;}
+  .hero p{color:var(--text-muted);font-size:13px;margin-bottom:22px;line-height:1.55;max-width:320px;margin-left:auto;margin-right:auto;}
+
+  .btn{background:var(--accent);color:#0a1420;border:1px solid var(--accent);padding:9px 16px;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:13.5px;transition:.12s;display:inline-flex;align-items:center;gap:7px;justify-content:center;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.97);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:none;}
+  .btn-block{width:100%;}
+  .btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{background:var(--card-hover);}
+  .btn-danger{background:var(--danger);border-color:var(--danger);color:#2b0705;}
+  .btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border);}
+  .btn-ghost:hover{color:var(--text);}
+  .btn-sm{padding:7px 12px;font-size:12.5px;}
+  .btn-icon-only{padding:7px;}
+  .btn .spin{width:13px;height:13px;border:2px solid rgba(0,0,0,.3);border-top-color:#0a1420;border-radius:50%;animation:spin .7s linear infinite;}
+  .btn-secondary .spin,.btn-ghost .spin{border:2px solid rgba(230,237,243,.25);border-top-color:var(--text);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .action-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .search-input{width:100%;padding:9px 12px;margin-bottom:10px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13.5px;}
+  .search-input:focus{outline:none;border-color:var(--accent);}
+
+  .list-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 13px;margin-bottom:7px;cursor:pointer;transition:.12s;display:flex;align-items:center;gap:11px;}
+  .list-item:hover{background:var(--card-hover);border-color:#3d444d;}
+  .list-item:active{transform:scale(.99);}
+  .li-ico{color:var(--text-muted);width:18px;height:18px;flex-shrink:0;}
+  .li-main{overflow:hidden;flex:1;}
+  .li-title{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .li-sub{font-size:11.5px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chevron{color:var(--text-muted);width:16px;height:16px;flex-shrink:0;}
+
+  .badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;}
+  .badge-ok{color:var(--ok);background:var(--ok-soft);}
+  .badge-fail{color:var(--danger);background:var(--danger-soft);}
+  .badge-pending{color:var(--warn);background:var(--warn-soft);}
+
+  .tile-grid{display:flex;flex-direction:column;gap:10px;margin-top:2px;}
+  .nav-tile{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:.12s;display:flex;align-items:center;gap:13px;}
+  .nav-tile:hover{border-color:var(--accent);background:var(--card-hover);}
+  .nav-tile:active{transform:scale(.99);}
+  .nav-tile .ico{width:38px;height:38px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .nav-tile .tt{font-size:14px;font-weight:700;margin-bottom:2px;}
+  .nav-tile .ts{font-size:12px;color:var(--text-muted);}
+  .repo-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+  .meta-chip{font-size:11px;color:var(--text-muted);background:var(--card);border:1px solid var(--border);padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;}
+
+  .job-title{font-size:11.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:16px 0 8px;display:flex;align-items:center;gap:8px;}
+  .job-title:first-child{margin-top:0;}
+  .step-item{padding:10px 12px;border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:6px;background:var(--card);border:1px solid var(--border);transition:.12s;}
+  .step-item:hover{background:var(--card-hover);}
+  .step-item.fail{border-color:rgba(248,81,73,.35);}
+  .step-left{display:flex;align-items:center;gap:9px;overflow:hidden;}
+  .step-ico{width:16px;height:16px;flex-shrink:0;}
+  .step-ico.ok{color:var(--ok);}
+  .step-ico.fail{color:var(--danger);}
+  .step-ico.pending{color:var(--warn);}
+  .step-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;}
+  .step-hint{font-size:11px;color:var(--text-muted);flex-shrink:0;}
+  .step-item.fail .step-hint{color:var(--danger);font-weight:600;}
+
+  .breadcrumb{font-size:11.5px;color:var(--text-muted);margin-bottom:10px;word-break:break-all;display:flex;align-items:center;gap:6px;}
+  .breadcrumb b{color:var(--text);font-weight:600;}
+
+  .editor-path{font-size:12px;color:var(--text-muted);margin-bottom:10px;word-break:break-all;padding:8px 11px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;gap:7px;}
+  textarea.editor{width:100%;height:calc(100vh - 340px);min-height:200px;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;resize:vertical;line-height:1.5;}
+  textarea.editor:focus{outline:none;border-color:var(--accent);}
+  textarea.editor:disabled{opacity:.45;}
+  .editor-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+
+  .empty-state{text-align:center;padding:34px 20px;color:var(--text-muted);}
+  .empty-state .ic{width:30px;height:30px;margin:0 auto 10px;color:var(--text-muted);}
+  .loading-row{display:flex;align-items:center;gap:10px;color:var(--text-muted);padding:20px 4px;font-size:13px;}
+  .spin-lg{width:18px;height:18px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+
+  /* Toasts */
+  .toast-wrap{position:fixed;bottom:14px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:1000;pointer-events:none;}
+  .toast{pointer-events:auto;max-width:92vw;background:#1c2129;border:1px solid var(--border);color:var(--text);padding:10px 15px;border-radius:9px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;align-items:center;gap:9px;opacity:0;transform:translateY(10px);transition:.22s ease;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast-ic{width:16px;height:16px;flex-shrink:0;}
+  .toast-success .toast-ic{color:var(--ok);}
+  .toast-error .toast-ic{color:var(--danger);}
+  .toast-info .toast-ic{color:var(--accent);}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(1,4,9,.72);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:.18s;z-index:2000;}
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal-box{background:var(--card);border:1px solid var(--border);border-radius:14px 14px 0 0;width:100%;max-width:600px;max-height:86vh;display:flex;flex-direction:column;transform:translateY(20px);transition:.2s ease;box-shadow:0 -8px 30px rgba(0,0,0,.5);}
+  .modal-overlay.open .modal-box{transform:translateY(0);}
+  @media (min-width:768px){.modal-overlay{align-items:center;}.modal-box{border-radius:14px;}}
+  .modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-shrink:0;}
+  .modal-header span{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .modal-close{background:transparent;border:none;color:var(--text-muted);width:28px;height:28px;border-radius:var(--radius-sm);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{color:var(--text);background:var(--bg);}
+  .modal-body{padding:15px 16px;overflow-y:auto;flex:1;font-size:13px;line-height:1.55;}
+  .modal-footer{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0;}
+  .modal-body pre{background:var(--bg-2);border:1px solid var(--border);padding:11px;border-radius:var(--radius-sm);overflow-x:auto;font-size:11.5px;color:#c9d1d9;font-family:"SF Mono",Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;max-height:46vh;overflow-y:auto;}
+  .log-error-line{color:var(--danger);font-weight:600;}
+  .modal-error-text{color:var(--danger);}
+  .modal-input{width:100%;padding:9px 11px;margin-top:4px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13.5px;}
+  .modal-input:focus{outline:none;border-color:var(--accent);}
+
+  footer.app-footer{flex-shrink:0;text-align:center;font-size:10.5px;color:var(--text-muted);padding:7px;border-top:1px solid var(--border);background:var(--bg);letter-spacing:.3px;}
+
+  /* Filtre dépôts */
+  .filter-row{display:flex;gap:7px;margin-bottom:10px;}
+  .chip{background:var(--card);border:1px solid var(--border);color:var(--text-muted);padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.12s;}
+  .chip:hover{color:var(--text);}
+  .chip.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);}
+
+  /* Modale plein texte (log / erreur) : header enrichi + textarea sélectionnable */
+  .modal-icon-btn{background:transparent;border:none;color:var(--text-muted);width:32px;height:32px;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .modal-icon-btn:hover{color:var(--text);background:var(--bg);}
+  .modal-icon-btn:active{transform:scale(.92);}
+  .modal-header-actions{display:flex;gap:4px;align-items:center;flex-shrink:0;}
+  .overflow-wrap{position:relative;}
+  .overflow-menu{position:absolute;top:38px;right:0;background:#1c2129;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.55);min-width:190px;z-index:20;display:none;overflow:hidden;}
+  .overflow-menu.open{display:block;}
+  .overflow-item{display:flex;align-items:center;gap:11px;padding:13px 15px;font-size:13.5px;cursor:pointer;color:var(--text);}
+  .overflow-item:hover{background:var(--card-hover);}
+  .overflow-item:active{background:var(--bg);}
+  .modal-textarea{width:100%;min-height:36vh;max-height:48vh;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:11.5px;color:#c9d1d9;line-height:1.55;resize:vertical;}
+  .modal-textarea:focus{outline:none;border-color:var(--accent);}
+  .modal-box.modal-fullscreen{border-radius:0;max-width:100%;width:100%;height:100dvh;max-height:100dvh;}
+  .modal-box.modal-fullscreen .modal-body{flex:1;display:flex;flex-direction:column;}
+  .modal-box.modal-fullscreen .modal-textarea{min-height:0;max-height:none;flex:1;height:100%;}
+  .modal-hint{font-size:11.5px;color:var(--text-muted);margin-top:9px;line-height:1.5;}
+
+  /* Éditeur : indicateur de modification */
+  .dirty-badge{font-size:10px;font-weight:700;color:var(--warn);background:var(--warn-soft);padding:2px 9px;border-radius:20px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;}
+</style>
+</head>
+<body>
+  <div class="app-bar">
+    <div class="brand"><span class="brand-ico" id="brandIco"></span>NPS GitHub Studio<span class="status-dot" id="connDot" style="margin-left:2px;"></span></div>
+    <button class="account-btn" id="accountBtn"></button>
+  </div>
+
+  <div class="screen-header">
+    <button class="back-btn" id="backBtn" style="display:none;"></button>
+    <div class="screen-title-wrap">
+      <div class="screen-title" id="screenTitle">Dépôts</div>
+      <div class="screen-subtitle" id="screenSubtitle"></div>
+    </div>
+    <div class="screen-actions" id="screenActions"></div>
+  </div>
+
+  <div class="screen-body" id="screenBody"></div>
+
+  <footer class="app-footer">Créer par NPS.NELSON</footer>
+  <div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ============================================================
+   ICÔNES SVG (remplace les émojis)
+============================================================ */
+const ICON_PATHS = {
+  bolt: '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
+  lock: '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/>',
+  user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0114 0"/>',
+  chevronLeft: '<path d="M15 18l-6-6 6-6"/>',
+  chevronRight: '<path d="M9 18l6-6-6-6"/>',
+  refresh: '<path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/><path d="M3 21v-5h5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  folder: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>',
+  file: '<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"/><path d="M14 3v5h5"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/>',
+  download: '<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/>',
+  upload: '<path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M5 3h14"/>',
+  share: '<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.6l7.6-4.2M8.2 13.4l7.6 4.2"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/>',
+  xCircle: '<circle cx="12" cy="12" r="9"/><path d="M14.5 9.5l-5 5M9.5 9.5l5 5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+  alert: '<path d="M12 9v4"/><circle cx="12" cy="16.2" r=".6" fill="currentColor" stroke="none"/><path d="M10.6 3.9L2.6 18a1.5 1.5 0 001.3 2.2h16.2a1.5 1.5 0 001.3-2.2L13.4 3.9a1.5 1.5 0 00-2.8 0z"/>',
+  external: '<path d="M14 4h6v6"/><path d="M10 14L20 4"/><path d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6"/>',
+  trash: '<path d="M4 7h16"/><path d="M9 7V4.5A1.5 1.5 0 0110.5 3h3A1.5 1.5 0 0115 4.5V7"/><path d="M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13"/>',
+  save: '<path d="M5 3h11l3 3v14a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M8 3v5h6V3"/><path d="M8 21v-6h8v6"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+  git: '<circle cx="12" cy="4.5" r="2"/><circle cx="12" cy="19.5" r="2"/><circle cx="19" cy="12" r="2"/><path d="M12 6.5v11"/><path d="M12 12h5"/>',
+  branch: '<circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 8v8"/><path d="M6 8a6 6 0 006 6h4"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 010 18 15 15 0 010-18z"/>',
+  code: '<path d="M9 18l-6-6 6-6"/><path d="M15 6l6 6-6 6"/>',
+  inbox: '<path d="M4 12h4l2 3h4l2-3h4"/><path d="M5.5 5h13l1.5 7v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/>',
+  expand: '<path d="M8 3H5a2 2 0 00-2 2v3"/><path d="M16 3h3a2 2 0 012 2v3"/><path d="M21 16v3a2 2 0 01-2 2h-3"/><path d="M3 16v3a2 2 0 002 2h3"/>',
+  collapse: '<path d="M9 3v4a2 2 0 01-2 2H3"/><path d="M15 3v4a2 2 0 002 2h4"/><path d="M9 21v-4a2 2 0 00-2-2H3"/><path d="M15 21v-4a2 2 0 012-2h4"/>',
+  more: '<circle cx="12" cy="5" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.3" fill="currentColor" stroke="none"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>'
+};
+function ico(name, size = 18){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[name] || ''}</svg>`;
+}
+document.getElementById('brandIco').innerHTML = ico('bolt', 15);
+document.getElementById('backBtn').innerHTML = ico('chevronLeft', 20);
+document.getElementById('accountBtn').innerHTML = ico('lock', 16);
+
+/* ============================================================
+   ÉTAT GLOBAL
+============================================================ */
+let authToken = null;
+let currentUser = null;
+let allRepos = [];
+const jobLogCache = new Map();
+
+/* ============================================================
+   HELPERS UI : toast / modal / confirm / prompt
+============================================================ */
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s === undefined || s === null ? '' : String(s);
+  return d.innerHTML;
+}
+function sanitizeFilename(name){
+  return (name || 'export').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 120) || 'export';
+}
+
+function toast(message, type = 'info', duration = 3600){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  const icName = type === 'success' ? 'check' : type === 'error' ? 'xCircle' : 'alert';
+  el.innerHTML = `<span class="toast-ic">${ico(icName, 16)}</span><span>${escapeHtml(message)}</span>`;
+  wrap.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 220); }, duration);
+}
+
+function ensureOverlay(){
+  let o = document.getElementById('modalOverlay');
+  if (!o){
+    o = document.createElement('div');
+    o.id = 'modalOverlay';
+    o.className = 'modal-overlay';
+    document.body.appendChild(o);
+    o.addEventListener('click', e => { if (e.target === o) closeModal(); });
+  }
+  return o;
+}
+function openModal({ title, bodyHTML, footerHTML = '' }){
+  const o = ensureOverlay();
+  o.innerHTML = `<div class="modal-box">
+      <div class="modal-header"><span>${title}</span><button class="modal-close" id="mClose">${ico('close', 16)}</button></div>
+      <div class="modal-body">${bodyHTML}</div>
+      ${footerHTML ? `<div class="modal-footer">${footerHTML}</div>` : ''}
+    </div>`;
+  document.getElementById('mClose').onclick = closeModal;
+  requestAnimationFrame(() => o.classList.add('open'));
+  return o;
+}
+function closeModal(){ const o = document.getElementById('modalOverlay'); if (o) o.classList.remove('open'); }
+
+/* ---------- Copier / Exporter / Partager (robuste mobile) ---------- */
+/**
+ * Copie le texte d'un <textarea readonly> visible à l'écran.
+ * La sélection de texte native (surlignage + bulle "Copier" d'Android) fonctionne
+ * TOUJOURS, même quand l'API JS Clipboard est bloquée (ex: pages ouvertes en
+ * content://, webview restreinte, etc.). On tente d'abord la copie automatique,
+ * et dans tous les cas on laisse le texte sélectionné pour que la copie manuelle
+ * marche à coup sûr.
+ */
+async function copyFromTextarea(id){
+  const ta = document.getElementById(id);
+  if (!ta) return;
+  const text = ta.value;
+  let autoCopied = false;
+  try{
+    if (navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+      autoCopied = true;
+    }
+  } catch(e){ autoCopied = false; }
+
+  if (!autoCopied){
+    try{
+      ta.focus({ preventScroll: true });
+      ta.setSelectionRange(0, text.length);
+      autoCopied = document.execCommand('copy');
+    } catch(e){ autoCopied = false; }
+  }
+
+  if (autoCopied){
+    toast('Copié dans le presse-papiers', 'success', 2200);
+  } else {
+    // Repli garanti : le texte reste sélectionné à l'écran, l'utilisateur peut
+    // copier via le menu natif Android qui apparaît sur la sélection.
+    ta.focus({ preventScroll: true });
+    ta.setSelectionRange(0, text.length);
+    toast('Texte sélectionné — appuie sur "Copier" dans le menu qui apparaît au-dessus', 'info', 5000);
+  }
+}
+
+function downloadText(filename, content){
+  try{
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = sanitizeFilename(filename);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    toast('Téléchargement lancé', 'success', 2200);
+  } catch(e){
+    toast('Téléchargement impossible sur cet appareil', 'error');
+  }
+}
+
+async function shareText(filename, content){
+  try{
+    if (navigator.canShare && navigator.share){
+      const file = new File([content], sanitizeFilename(filename), { type: 'text/plain' });
+      if (navigator.canShare({ files: [file] })){
+        await navigator.share({ files: [file], title: filename });
+        return;
+      }
+    }
+    if (navigator.share){
+      await navigator.share({ title: filename, text: content });
+      return;
+    }
+    throw new Error('Web Share indisponible');
+  } catch(e){
+    if (e && e.name === 'AbortError') return; // l'utilisateur a annulé le partage
+    downloadText(filename, content);
+  }
+}
+
+/* ---------- Menu ⋮ (overflow) réutilisable dans les modales ---------- */
+function closeOverflowMenus(){
+  document.querySelectorAll('.overflow-menu.open').forEach(m => m.classList.remove('open'));
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('overflowMenu');
+  const btn = document.getElementById('overflowBtn');
+  if (menu && menu.classList.contains('open') && !menu.contains(e.target) && e.target !== btn && !(btn && btn.contains(e.target))){
+    menu.classList.remove('open');
+  }
+});
+
+/**
+ * Modale "plein texte" (logs, erreurs) : contenu affiché dans un textarea
+ * sélectionnable (copie garantie), bouton plein écran, et menu ⋮ regroupant
+ * Exporter / Partager / Ouvrir sur GitHub pour ne pas surcharger l'écran de
+ * boutons qu'on peut louper.
+ */
+function renderTextModal(title, text, { filename = 'export.txt', jobUrl = null } = {}){
+  window.__modalText = text;
+  const menuItems = [
+    { label: 'Exporter (.txt)', icon: 'download', action: `downloadText(${JSON.stringify(filename)}, window.__modalText); closeOverflowMenus();` },
+    { label: 'Partager', icon: 'share', action: `shareText(${JSON.stringify(filename)}, window.__modalText); closeOverflowMenus();` }
+  ];
+  if (jobUrl) menuItems.push({ label: 'Ouvrir sur GitHub', icon: 'external', action: `window.open(${JSON.stringify(jobUrl)}, '_blank'); closeOverflowMenus();` });
+  const menuHTML = menuItems.map(m => `<div class="overflow-item" onclick="${m.action}">${ico(m.icon, 15)}<span>${escapeHtml(m.label)}</span></div>`).join('');
+
+  const o = ensureOverlay();
+  o.innerHTML = `<div class="modal-box" id="textModalBox">
+      <div class="modal-header">
+        <span>${title}</span>
+        <div class="modal-header-actions">
+          <button class="modal-icon-btn" id="fsToggleBtn" title="Plein écran">${ico('expand', 17)}</button>
+          <div class="overflow-wrap">
+            <button class="modal-icon-btn" id="overflowBtn" title="Plus d'options">${ico('more', 17)}</button>
+            <div class="overflow-menu" id="overflowMenu">${menuHTML}</div>
+          </div>
+          <button class="modal-icon-btn" id="mClose" title="Fermer">${ico('close', 17)}</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <textarea class="modal-textarea" id="modalTextArea" readonly>${escapeHtml(text)}</textarea>
+        <button class="btn btn-block" id="copyPrimaryBtn" style="margin-top:10px;">${ico('copy', 15)} Copier</button>
+        <div class="modal-hint">Astuce : si la copie automatique ne marche pas sur cet appareil, le texte reste sélectionné — utilise le menu de copie qui apparaît au-dessus du clavier.</div>
+      </div>
+    </div>`;
+  document.getElementById('mClose').onclick = closeModal;
+  document.getElementById('fsToggleBtn').onclick = () => {
+    const box = document.getElementById('textModalBox');
+    const fs = box.classList.toggle('modal-fullscreen');
+    document.getElementById('fsToggleBtn').innerHTML = ico(fs ? 'collapse' : 'expand', 17);
+  };
+  document.getElementById('overflowBtn').onclick = (e) => { e.stopPropagation(); document.getElementById('overflowMenu').classList.toggle('open'); };
+  document.getElementById('copyPrimaryBtn').onclick = () => copyFromTextarea('modalTextArea');
+  requestAnimationFrame(() => o.classList.add('open'));
+}
+
+function showError(title, text){
+  renderTextModal(`${ico('alert', 15)} ${escapeHtml(title)}`, text, { filename: 'erreur.txt' });
+}
+
+function confirmModal(message, { confirmLabel = 'Confirmer', danger = true } = {}){
+  return new Promise(resolve => {
+    openModal({
+      title: 'Confirmation',
+      bodyHTML: `<p>${escapeHtml(message)}</p>`,
+      footerHTML: `<button class="btn btn-secondary btn-sm" id="cNo">Annuler</button><button class="btn ${danger ? 'btn-danger' : ''} btn-sm" id="cYes">${escapeHtml(confirmLabel)}</button>`
+    });
+    document.getElementById('cNo').onclick = () => { closeModal(); resolve(false); };
+    document.getElementById('cYes').onclick = () => { closeModal(); resolve(true); };
+  });
+}
+
+function promptModal(message, { placeholder = '', okLabel = 'Créer', title = 'Nouveau fichier' } = {}){
+  return new Promise(resolve => {
+    openModal({
+      title,
+      bodyHTML: `<p style="color:var(--text-muted);margin-bottom:6px;">${escapeHtml(message)}</p><input type="text" id="pInput" class="modal-input" placeholder="${escapeHtml(placeholder)}">`,
+      footerHTML: `<button class="btn btn-secondary btn-sm" id="pNo">Annuler</button><button class="btn btn-sm" id="pYes">${escapeHtml(okLabel)}</button>`
+    });
+    const input = document.getElementById('pInput');
+    setTimeout(() => input.focus(), 50);
+    const finish = v => { closeModal(); resolve(v); };
+    document.getElementById('pNo').onclick = () => finish(null);
+    document.getElementById('pYes').onclick = () => finish(input.value.trim() || null);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') finish(input.value.trim() || null); });
+  });
+}
+
+function setBtnLoading(btn, loading, idleHTML){
+  if (loading){ btn.dataset.html = btn.innerHTML; btn.innerHTML = `<span class="spin"></span> Patientez…`; btn.disabled = true; }
+  else{ btn.innerHTML = idleHTML ?? btn.dataset.html ?? btn.innerHTML; btn.disabled = false; }
+}
+
+/* ============================================================
+   ENCODAGE / DÉCODAGE ROBUSTE
+============================================================ */
+function b64ToUtf8(b64){
+  try{
+    const clean = b64.replace(/[\r\n\s]/g, ''); // GitHub renvoie le base64 avec des retours à la ligne : atob() plante sinon
+    const binary = atob(clean);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+  } catch(e){
+    throw new Error("Le contenu de ce fichier n'a pas pu être décodé (encodage invalide ou fichier binaire).");
+  }
+}
+function utf8ToB64(str){
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  return btoa(binary);
+}
+function encodePath(path){ return path.split('/').filter(Boolean).map(encodeURIComponent).join('/'); }
+function joinPath(base, name){ return base ? `${base}/${name}` : name; }
+
+/* ============================================================
+   APPEL API GITHUB (wrapper commun)
+============================================================ */
+function friendly(err){
+  if (!err) return 'Erreur inconnue';
+  if (/failed to fetch|networkerror|load failed/i.test(err.message || '')) return "Connexion impossible. Vérifie ta connexion internet et réessaie.";
+  return err.message;
+}
+
+async function gh(path, opts = {}){
+  let res;
+  try{
+    res = await fetch(`https://api.github.com${path}`, {
+      ...opts,
+      headers: { Authorization: `token ${authToken}`, ...(opts.headers || {}) }
+    });
+  } catch(e){
+    throw new Error("Connexion impossible. Vérifie ta connexion internet et réessaie.");
+  }
+  let data = null;
+  try{ data = await res.json(); } catch(e){ data = null; }
+  if (!res.ok){
+    const msg = (data && data.message) ? data.message : `Erreur GitHub (statut ${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
+/* ============================================================
+   NAVIGATION PAR ÉCRANS
+============================================================ */
+const nav = { stack: [] };
+
+function navTo(renderFn, title, args = [], subtitle = ''){
+  nav.stack.push({ renderFn, title, args, subtitle });
+  paint(true);
+}
+function navBack(){
+  if (nav.stack.length <= 1) return;
+  nav.stack.pop();
+  paint(false);
+}
+function navReset(renderFn, title, args = [], subtitle = ''){
+  nav.stack = [{ renderFn, title, args, subtitle }];
+  paint(false);
+}
+function paint(isForward){
+  const top = nav.stack[nav.stack.length - 1];
+  document.getElementById('backBtn').style.display = nav.stack.length > 1 ? 'flex' : 'none';
+  document.getElementById('screenTitle').textContent = top.title;
+  document.getElementById('screenSubtitle').textContent = top.subtitle || '';
+  document.getElementById('screenActions').innerHTML = '';
+  const body = document.getElementById('screenBody');
+  body.className = 'screen-body ' + (isForward ? 'anim-in' : 'anim-back');
+  body.innerHTML = `<div class="loading-row"><span class="spin-lg"></span> Chargement…</div>`;
+  top.renderFn(...top.args);
+}
+function setScreenActions(html){ document.getElementById('screenActions').innerHTML = html; }
+function setBody(html){ document.getElementById('screenBody').innerHTML = html; }
+
+document.getElementById('backBtn').addEventListener('click', navBack);
+
+/* ============================================================
+   COMPTE / CONNEXION
+============================================================ */
+document.getElementById('accountBtn').addEventListener('click', () => {
+  if (authToken && currentUser){
+    openModal({
+      title: 'Compte GitHub',
+      bodyHTML: `<div style="display:flex;align-items:center;gap:12px;">
+          <img src="${escapeHtml(currentUser.avatar_url)}" style="width:42px;height:42px;border-radius:50%;">
+          <div><div style="font-weight:700;">${escapeHtml(currentUser.login)}</div><div style="color:var(--text-muted);font-size:12px;">Connecté</div></div>
+        </div>`,
+      footerHTML: `<button class="btn btn-danger btn-sm" id="disconnectBtn">Se déconnecter</button><button class="btn btn-sm" onclick="closeModal()">Fermer</button>`
+    });
+    document.getElementById('disconnectBtn').onclick = () => {
+      authToken = null; currentUser = null; allRepos = [];
+      localStorage.removeItem('nps_gh_studio_token');
+      document.getElementById('connDot').classList.remove('on');
+      document.getElementById('accountBtn').innerHTML = ico('lock', 16);
+      document.getElementById('accountBtn').style.borderRadius = 'var(--radius-sm)';
+      closeModal();
+      toast('Déconnecté', 'info', 2000);
+      navReset(renderRepos, 'Dépôts');
+    };
+  } else {
+    openModal({
+      title: 'Se connecter à GitHub',
+      bodyHTML: `<p style="color:var(--text-muted);margin-bottom:8px;">Colle un token GitHub (ghp_...) avec accès repo.</p><input type="password" id="tokenModalInput" class="modal-input" placeholder="ghp_xxxxxxxxxxxx">`,
+      footerHTML: `<button class="btn btn-block" id="connectModalBtn">Connexion</button>`
+    });
+    const input = document.getElementById('tokenModalInput');
+    setTimeout(() => input.focus(), 50);
+    const doConnect = () => connectWithToken(input.value.trim());
+    document.getElementById('connectModalBtn').onclick = doConnect;
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') doConnect(); });
+  }
+});
+
+async function connectWithToken(token){
+  if (!token){ toast('Entrez un token GitHub.', 'error'); return; }
+  const btn = document.getElementById('connectModalBtn');
+  setBtnLoading(btn, true);
+  try{
+    authToken = token;
+    const [repos, user] = await Promise.all([
+      gh('/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member'),
+      gh('/user')
+    ]);
+    allRepos = repos;
+    currentUser = user;
+    localStorage.setItem('nps_gh_studio_token', token);
+    document.getElementById('connDot').classList.add('on');
+    const accBtn = document.getElementById('accountBtn');
+    accBtn.innerHTML = `<img src="${escapeHtml(user.avatar_url)}">`;
+    accBtn.style.borderRadius = '50%';
+    closeModal();
+    toast(`Connecté en tant que ${user.login} · ${repos.length} dépôt(s)`, 'success');
+    navReset(renderRepos, 'Dépôts');
+  } catch(err){
+    authToken = null;
+    setBtnLoading(btn, false, 'Connexion');
+    showError('Connexion impossible', friendly(err));
+    return;
+  }
+  setBtnLoading(btn, false, 'Connexion');
+}
+
+/* ============================================================
+   ÉCRAN 1 : DÉPÔTS
+============================================================ */
+let repoFilter = 'all'; // 'all' | 'public' | 'private'
+
+function renderRepos(){
+  if (!authToken){
+    setBody(`<div class="hero">
+        <div class="hero-ico">${ico('lock', 24)}</div>
+        <h2>Connecte-toi à GitHub</h2>
+        <p>Colle ton token pour voir tes dépôts, analyser les erreurs de build et éditer ton code depuis le téléphone.</p>
+        <button class="btn" onclick="document.getElementById('accountBtn').click()">Se connecter</button>
+      </div>`);
+    return;
+  }
+  setScreenActions(`<button class="icon-btn" title="Actualiser" onclick="refreshRepos()">${ico('refresh', 16)}</button>`);
+  if (!allRepos.length){
+    setBody(`<div class="empty-state"><div class="ic">${ico('inbox', 30)}</div>Aucun dépôt trouvé pour ce token.</div>`);
+    return;
+  }
+  setBody(`
+    <div class="filter-row">
+      <button class="chip ${repoFilter === 'all' ? 'active' : ''}" onclick="setRepoFilter('all', this)">Tous</button>
+      <button class="chip ${repoFilter === 'public' ? 'active' : ''}" onclick="setRepoFilter('public', this)">${ico('globe', 12)} Publics</button>
+      <button class="chip ${repoFilter === 'private' ? 'active' : ''}" onclick="setRepoFilter('private', this)">${ico('lock', 12)} Privés</button>
+    </div>
+    <input type="text" class="search-input" id="repoSearchInput" placeholder="Filtrer les dépôts…">
+    <div id="repoListWrap"></div>
+  `);
+  document.getElementById('repoSearchInput').addEventListener('input', renderRepoListFiltered);
+  renderRepoListFiltered();
+}
+function renderRepoListFiltered(){
+  const q = (document.getElementById('repoSearchInput')?.value || '').trim().toLowerCase();
+  const filtered = allRepos.filter(r => {
+    if (repoFilter === 'public' && r.private) return false;
+    if (repoFilter === 'private' && !r.private) return false;
+    if (q && !r.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const wrap = document.getElementById('repoListWrap');
+  if (!wrap) return;
+  if (!filtered.length){
+    wrap.innerHTML = `<div class="empty-state"><div class="ic">${ico('inbox', 28)}</div>Aucun dépôt ne correspond.</div>`;
+    return;
+  }
+  wrap.innerHTML = filtered.map(r => `
+    <div class="list-item" onclick='openRepo(${JSON.stringify(r.full_name)})'>
+      <span class="li-ico">${ico('git', 18)}</span>
+      <div class="li-main">
+        <div class="li-title">${escapeHtml(r.name)}</div>
+        <div class="li-sub">${r.private ? 'Privé' : 'Public'} · maj ${new Date(r.updated_at).toLocaleDateString('fr-FR')}</div>
+      </div>
+      <span class="chevron">${ico('chevronRight', 16)}</span>
+    </div>`).join('');
+}
+function setRepoFilter(f, el){
+  repoFilter = f;
+  document.querySelectorAll('.filter-row .chip').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderRepoListFiltered();
+}
+async function refreshRepos(){
+  try{
+    allRepos = await gh('/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member');
+    toast('Liste actualisée', 'success', 1800);
+    renderRepos();
+  } catch(err){ showError('Erreur', friendly(err)); }
+}
+function openRepo(fullName){ navTo(renderRepoHome, fullName, [fullName]); }
+
+/* ============================================================
+   ÉCRAN 2 : ACCUEIL DU DÉPÔT
+============================================================ */
+async function renderRepoHome(fullName){
+  setBody(`<div class="loading-row"><span class="spin-lg"></span> Chargement du dépôt…</div>`);
+  try{
+    const [repo, runsData] = await Promise.all([
+      gh(`/repos/${fullName}`),
+      gh(`/repos/${fullName}/actions/runs?per_page=1`).catch(() => ({ workflow_runs: [] }))
+    ]);
+    const lastRun = runsData.workflow_runs && runsData.workflow_runs[0];
+    const lastRunLabel = lastRun ? `Dernier run : ${lastRun.conclusion || lastRun.status}` : 'Aucun run récent';
+    setBody(`
+      <div class="tile-grid">
+        <div class="nav-tile" onclick='navTo(renderActions, "Actions", [${JSON.stringify(fullName)}])'>
+          <div class="ico">${ico('code', 19)}</div>
+          <div style="flex:1;"><div class="tt">Actions &amp; Logs</div><div class="ts">${escapeHtml(lastRunLabel)}</div></div>
+          <span class="chevron">${ico('chevronRight', 18)}</span>
+        </div>
+        <div class="nav-tile" onclick='navTo(renderFiles, "Fichiers", [${JSON.stringify(fullName)}, ""])'>
+          <div class="ico">${ico('folder', 19)}</div>
+          <div style="flex:1;"><div class="tt">Fichiers &amp; Éditeur</div><div class="ts">Parcourir et modifier le code</div></div>
+          <span class="chevron">${ico('chevronRight', 18)}</span>
+        </div>
+      </div>
+      <div class="repo-meta">
+        <span class="meta-chip">${ico('branch', 13)} ${escapeHtml(repo.default_branch)}</span>
+        <span class="meta-chip">${ico(repo.private ? 'lock' : 'globe', 13)} ${repo.private ? 'Privé' : 'Public'}</span>
+        ${repo.language ? `<span class="meta-chip">${escapeHtml(repo.language)}</span>` : ''}
+      </div>
+      <div class="action-row" style="margin-top:12px;">
+        <button class="btn btn-secondary btn-sm" id="toggleVisBtn">${ico(repo.private ? 'globe' : 'lock', 14)} Rendre ${repo.private ? 'public' : 'privé'}</button>
+      </div>
+    `);
+    document.getElementById('toggleVisBtn').onclick = async () => {
+      const makePrivate = !repo.private;
+      const warn = makePrivate
+        ? "Rendre ce dépôt privé ? Le code ne sera plus visible publiquement (certaines intégrations externes peuvent être affectées)."
+        : "Rendre ce dépôt public ? Tout le monde pourra voir le code, l'historique et les issues.";
+      const ok = await confirmModal(warn, { confirmLabel: makePrivate ? 'Rendre privé' : 'Rendre public', danger: true });
+      if (!ok) return;
+      const btn = document.getElementById('toggleVisBtn');
+      setBtnLoading(btn, true);
+      try{
+        await gh(`/repos/${fullName}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ private: makePrivate }) });
+        const cached = allRepos.find(r => r.full_name === fullName);
+        if (cached) cached.private = makePrivate;
+        toast(`Dépôt maintenant ${makePrivate ? 'privé' : 'public'}`, 'success');
+        renderRepoHome(fullName);
+      } catch(err){
+        showError('Erreur de changement de visibilité', friendly(err));
+        setBtnLoading(btn, false, `${ico(repo.private ? 'globe' : 'lock', 14)} Rendre ${repo.private ? 'public' : 'privé'}`);
+      }
+    };
+  } catch(err){
+    setBody(`<div class="empty-state"><div class="ic">${ico('alert', 30)}</div>${escapeHtml(friendly(err))}</div>`);
+    showError('Erreur de chargement du dépôt', friendly(err));
+  }
+}
+
+/* ============================================================
+   ÉCRAN 3a : LISTE DES RUNS
+============================================================ */
+async function renderActions(fullName){
+  setScreenActions(`<button class="icon-btn" title="Actualiser" onclick='navTo(renderActions, "Actions", [${JSON.stringify(fullName)}])'>${ico('refresh', 16)}</button>`);
+  try{
+    const data = await gh(`/repos/${fullName}/actions/runs?per_page=15`);
+    if (!data.workflow_runs || !data.workflow_runs.length){
+      setBody(`<div class="empty-state"><div class="ic">${ico('code', 30)}</div>Aucun workflow récent.</div>`);
+      return;
+    }
+    setBody(data.workflow_runs.map(run => {
+      const cls = run.conclusion === 'success' ? 'badge-ok' : (run.conclusion === 'failure' ? 'badge-fail' : 'badge-pending');
+      return `<div class="list-item" onclick='navTo(renderRunDetail, ${JSON.stringify(run.name + " #" + run.run_number)}, [${JSON.stringify(fullName)}, ${run.id}])'>
+        <div class="li-main">
+          <div class="li-title">${escapeHtml(run.name)} (#${run.run_number})</div>
+          <div class="li-sub">${new Date(run.created_at).toLocaleString('fr-FR')}</div>
+        </div>
+        <span class="badge ${cls}">${escapeHtml(run.conclusion || run.status)}</span>
+      </div>`;
+    }).join(''));
+  } catch(err){
+    setBody(`<div class="empty-state"><div class="ic">${ico('alert', 30)}</div>${escapeHtml(friendly(err))}</div>`);
+    showError('Erreur de chargement des workflows', friendly(err));
+  }
+}
+
+/* ============================================================
+   ÉCRAN 3b : DÉTAIL DU RUN (JOBS / ÉTAPES)
+============================================================ */
+async function renderRunDetail(fullName, runId){
+  try{
+    const data = await gh(`/repos/${fullName}/actions/runs/${runId}/jobs`);
+    if (!data.jobs || !data.jobs.length){
+      setBody(`<div class="empty-state"><div class="ic">${ico('inbox', 30)}</div>Aucun job trouvé pour ce run.</div>`);
+      return;
+    }
+    let html = '';
+    data.jobs.forEach(job => {
+      const cls = job.conclusion === 'success' ? 'badge-ok' : (job.conclusion === 'failure' ? 'badge-fail' : 'badge-pending');
+      html += `<div class="job-title">${escapeHtml(job.name)}<span class="badge ${cls}">${escapeHtml(job.conclusion || job.status)}</span></div>`;
+      (job.steps || []).forEach(step => {
+        const stepIco = step.conclusion === 'success' ? 'check' : (step.conclusion === 'failure' ? 'xCircle' : 'clock');
+        const stepClass = step.conclusion === 'success' ? 'ok' : (step.conclusion === 'failure' ? 'fail' : 'pending');
+        const isFail = step.conclusion === 'failure';
+        html += `<div class="step-item ${isFail ? 'fail' : ''}" onclick='viewStepLog(${JSON.stringify(fullName)}, ${JSON.stringify(job)}, ${JSON.stringify(step)}, ${JSON.stringify(String(runId))})'>
+          <div class="step-left"><span class="step-ico ${stepClass}">${ico(stepIco, 16)}</span><span class="step-name">${escapeHtml(step.name)}</span></div>
+          <span class="step-hint">${isFail ? "Voir l'erreur" : 'Voir le log'}</span>
+        </div>`;
+      });
+    });
+    setBody(html);
+  } catch(err){
+    setBody(`<div class="empty-state"><div class="ic">${ico('alert', 30)}</div>${escapeHtml(friendly(err))}</div>`);
+    showError('Erreur de chargement des jobs', friendly(err));
+  }
+}
+
+function extractStepLog(fullLog, stepName){
+  const lines = fullLog.split('\n');
+  const nameLower = stepName.trim().toLowerCase();
+  let capturing = false, collected = [], matchedAny = false;
+  for (const line of lines){
+    const g = line.match(/##\[group\](.*)$/);
+    if (g){
+      const label = g[1].trim().toLowerCase();
+      capturing = label.includes(nameLower) || nameLower.includes(label);
+      if (capturing){ matchedAny = true; collected.push(line); }
+      continue;
+    }
+    if (/##\[endgroup\]/.test(line)){ if (capturing) collected.push(line); capturing = false; continue; }
+    if (capturing) collected.push(line);
+  }
+  return matchedAny ? collected.join('\n') : null;
+}
+function cleanLogText(t){ return t.replace(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z\s?/gm, ''); }
+
+async function viewStepLog(fullName, job, step, runId){
+  const title = `${job.name} → ${step.name}`;
+  const jobUrl = job.html_url || `https://github.com/${fullName}/actions/runs/${runId}/job/${job.id}`;
+  const stepAnchor = `${jobUrl}#step:${step.number}:1`;
+  const openLink = `<a class="btn btn-ghost btn-sm" href="${stepAnchor}" target="_blank" rel="noopener">${ico('external', 14)} GitHub</a>`;
+  const logFilename = `${sanitizeFilename(job.name)}_${sanitizeFilename(step.name)}.log`;
+
+  // On charge et prépare TOUT le texte d'abord, puis on ouvre une seule modale déjà
+  // complète : copier/exporter/partager ne dépendent alors plus d'aucun accès réseau.
+  openModal({ title: escapeHtml(title), bodyHTML: `<div class="loading-row"><span class="spin-lg"></span> Chargement du log…</div>` });
+
+  try{
+    let fullLog = jobLogCache.get(job.id);
+    if (!fullLog){
+      const res = await fetch(`https://api.github.com/repos/${fullName}/actions/jobs/${job.id}/logs`, { headers: { Authorization: `token ${authToken}` } });
+      if (!res.ok) throw new Error(`Log indisponible (statut ${res.status}). Le run est peut-être trop ancien ou encore en cours.`);
+      fullLog = await res.text();
+      jobLogCache.set(job.id, fullLog);
+    }
+    const section = extractStepLog(fullLog, step.name) || fullLog;
+    const cleaned = cleanLogText(section).trim();
+    renderTextModal(escapeHtml(title), cleaned, { filename: logFilename, jobUrl: stepAnchor });
+  } catch(err){
+    const info = [
+      `Étape : ${step.name}`, `Statut : ${step.status}`, `Conclusion : ${step.conclusion || 'en cours'}`,
+      step.started_at ? `Démarré : ${new Date(step.started_at).toLocaleString('fr-FR')}` : '',
+      step.completed_at ? `Terminé : ${new Date(step.completed_at).toLocaleString('fr-FR')}` : '',
+      '', `Le log complet n'a pas pu être chargé automatiquement (${friendly(err)}).`,
+      `Ouvre le lien GitHub ci-dessous pour le consulter et le copier directement.`
+    ].filter(Boolean).join('\n');
+    renderTextModal(escapeHtml(title), info, { filename: logFilename, jobUrl: stepAnchor });
+  }
+}
+
+/* ============================================================
+   ÉCRAN 3c : NAVIGATEUR DE FICHIERS
+============================================================ */
+async function renderFiles(fullName, path){
+  setScreenActions(`<button class="icon-btn" title="Nouveau fichier" onclick='createNewFile(${JSON.stringify(fullName)}, ${JSON.stringify(path)})'>${ico('plus', 16)}</button><button class="icon-btn" title="Actualiser" onclick='navTo(renderFiles, "Fichiers", [${JSON.stringify(fullName)}, ${JSON.stringify(path)}])'>${ico('refresh', 16)}</button>`);
+  try{
+    const endpoint = path ? `/repos/${fullName}/contents/${encodePath(path)}` : `/repos/${fullName}/contents`;
+    const files = await gh(endpoint);
+    if (!Array.isArray(files)) throw new Error("Ce chemin n'est pas un dossier.");
+    const crumb = path ? `<div class="breadcrumb">${ico('folder', 14)}<b>${escapeHtml(path)}</b></div>` : '';
+    if (!files.length){
+      setBody(`${crumb}<div class="empty-state"><div class="ic">${ico('inbox', 30)}</div>Dossier vide.</div>`);
+      return;
+    }
+    const sorted = [...files].sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name) : (a.type === 'dir' ? -1 : 1)));
+    const html = sorted.map(f => {
+      if (f.type === 'dir'){
+        return `<div class="list-item" onclick='navTo(renderFiles, ${JSON.stringify(f.name)}, [${JSON.stringify(fullName)}, ${JSON.stringify(f.path)}])'>
+          <span class="li-ico">${ico('folder', 17)}</span><div class="li-main"><div class="li-title">${escapeHtml(f.name)}</div></div><span class="chevron">${ico('chevronRight', 16)}</span>
+        </div>`;
+      }
+      return `<div class="list-item" onclick='navTo(renderEditor, ${JSON.stringify(f.name)}, [${JSON.stringify(fullName)}, ${JSON.stringify(f.path)}, false])'>
+        <span class="li-ico">${ico('file', 17)}</span><div class="li-main"><div class="li-title">${escapeHtml(f.name)}</div></div><span class="chevron">${ico('chevronRight', 16)}</span>
+      </div>`;
+    }).join('');
+    setBody(crumb + html);
+  } catch(err){
+    setBody(`<div class="empty-state"><div class="ic">${ico('alert', 30)}</div>${escapeHtml(friendly(err))}</div>`);
+    showError('Erreur de chargement des fichiers', friendly(err));
+  }
+}
+
+async function createNewFile(fullName, path){
+  const name = await promptModal('Nom du nouveau fichier (ex: build.gradle) :', { placeholder: 'nom-du-fichier.ext' });
+  if (!name) return;
+  navTo(renderEditor, name, [fullName, joinPath(path, name), true]);
+}
+
+/* ============================================================
+   ÉCRAN 3d : ÉDITEUR
+============================================================ */
+async function renderEditor(fullName, path, isNew){
+  setScreenActions('');
+  setBody(`
+    <div class="editor-path">${ico('file', 14)}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(path)}</span><span class="dirty-badge" id="dirtyBadge" style="display:none;">Modifié</span></div>
+    <textarea class="editor" id="editorArea" disabled placeholder="Chargement…"></textarea>
+    <div class="editor-actions">
+      <button class="btn" id="saveBtn" disabled>${ico('save', 15)} Enregistrer</button>
+      <button class="btn btn-secondary" id="importFileBtn">${ico('upload', 15)} Importer</button>
+      <button class="btn btn-secondary" id="exportFileBtn">${ico('download', 15)} Exporter</button>
+      <button class="btn btn-secondary" id="shareFileBtn">${ico('share', 15)} Partager</button>
+      ${isNew ? '' : `<button class="btn btn-danger" id="deleteBtn">${ico('trash', 15)} Supprimer</button>`}
+    </div>
+    <input type="file" id="importFileInput" style="display:none;" accept=".txt,.js,.jsx,.ts,.tsx,.html,.htm,.css,.json,.md,.xml,.yml,.yaml,.py,.java,.kt,.gradle,.properties,.dart,.c,.cpp,.h,.sh,.gitignore,.env,text/*">
+  `);
+  const importInput = document.getElementById('importFileInput');
+  document.getElementById('importFileBtn').onclick = () => importInput.click();
+  importInput.onchange = async () => {
+    const file = importInput.files[0];
+    if (!file) return;
+    // Fichiers texte "normaux" jusqu'à 5 Mo — au-delà, très probablement pas
+    // un fichier de code source, et un textarea n'est de toute façon pas fait
+    // pour ça.
+    if (file.size > 5 * 1024 * 1024) {
+      toast("Fichier trop volumineux (max 5 Mo pour un import dans l'éditeur).", 'error');
+      importInput.value = '';
+      return;
+    }
+    try {
+      const text = await file.text();
+      const area = document.getElementById('editorArea');
+      area.disabled = false;
+      area.value = text;
+      area.dispatchEvent(new Event('input'));
+      toast(`"${file.name}" importé — pense à Enregistrer pour l'envoyer sur GitHub.`, 'success');
+    } catch (err) {
+      showError('Import impossible', friendly(err));
+    } finally {
+      importInput.value = '';
+    }
+  };
+  const area = document.getElementById('editorArea');
+  const saveBtn = document.getElementById('saveBtn');
+  const dirtyBadge = document.getElementById('dirtyBadge');
+  const baseName = path.split('/').pop() || 'fichier.txt';
+  let sha = undefined;
+  let originalContent = '';
+
+  // Le bouton Enregistrer ne s'active que si le contenu a réellement changé,
+  // pour éviter tout envoi accidentel sans modification.
+  function updateDirtyState(){
+    const dirty = area.value !== originalContent;
+    saveBtn.disabled = !dirty;
+    dirtyBadge.style.display = dirty ? 'inline-block' : 'none';
+  }
+  area.addEventListener('input', updateDirtyState);
+
+  document.getElementById('exportFileBtn').onclick = () => downloadText(baseName, area.value);
+  document.getElementById('shareFileBtn').onclick = () => shareText(baseName, area.value);
+
+  if (isNew){
+    area.disabled = false;
+    area.value = '';
+    area.placeholder = 'Écris le contenu du nouveau fichier…';
+    originalContent = '';
+    saveBtn.disabled = false; // fichier neuf : on peut enregistrer même vide
+  } else {
+    try{
+      const data = await gh(`/repos/${fullName}/contents/${encodePath(path)}`);
+      if (Array.isArray(data)) throw new Error("Ceci est un dossier, pas un fichier.");
+      if (data.content && data.encoding === 'base64'){
+        area.value = b64ToUtf8(data.content);
+      } else if (data.download_url){
+        const rawRes = await fetch(data.download_url);
+        if (!rawRes.ok) throw new Error('Impossible de télécharger le contenu brut du fichier.');
+        area.value = await rawRes.text();
+      } else {
+        throw new Error('Contenu indisponible : fichier trop volumineux ou binaire.');
+      }
+      sha = data.sha;
+      area.disabled = false;
+      originalContent = area.value;
+      saveBtn.disabled = true; // rien de modifié juste après le chargement
+    } catch(err){
+      area.placeholder = 'Erreur de chargement';
+      area.disabled = true;
+      showError('Erreur de lecture du fichier', friendly(err));
+    }
+  }
+
+  document.getElementById('saveBtn').onclick = async () => {
+    const btn = document.getElementById('saveBtn');
+    setBtnLoading(btn, true);
+    try{
+      if (sha === undefined){
+        try{ const check = await gh(`/repos/${fullName}/contents/${encodePath(path)}`); sha = check.sha; } catch(e){ /* n'existe pas encore : création */ }
+      }
+      const body = { message: `Update ${path} via NPS Editor`, content: utf8ToB64(area.value) };
+      if (sha) body.sha = sha;
+      const data = await gh(`/repos/${fullName}/contents/${encodePath(path)}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      });
+      sha = data.content.sha;
+      originalContent = area.value;
+      updateDirtyState();
+      toast('Fichier enregistré avec succès !', 'success');
+    } catch(err){
+      showError("Erreur d'enregistrement", friendly(err));
+    } finally {
+      setBtnLoading(btn, false, `${ico('save', 15)} Enregistrer`);
+      updateDirtyState();
+    }
+  };
+
+  const deleteBtn = document.getElementById('deleteBtn');
+  if (deleteBtn){
+    deleteBtn.onclick = async () => {
+      const ok = await confirmModal(`Supprimer "${path}" ? Cette action est irréversible.`, { confirmLabel: 'Supprimer' });
+      if (!ok) return;
+      setBtnLoading(deleteBtn, true);
+      try{
+        if (sha === undefined){ const check = await gh(`/repos/${fullName}/contents/${encodePath(path)}`); sha = check.sha; }
+        await gh(`/repos/${fullName}/contents/${encodePath(path)}`, {
+          method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: `Delete ${path} via NPS Editor`, sha })
+        });
+        toast('Fichier supprimé.', 'success');
+        navBack();
+      } catch(err){
+        showError('Erreur de suppression', friendly(err));
+      } finally {
+        setBtnLoading(deleteBtn, false, `${ico('trash', 15)} Supprimer`);
+      }
+    };
+  }
+}
+
+/* ============================================================
+   DÉMARRAGE
+============================================================ */
+(async function initApp(){
+  const savedToken = localStorage.getItem('nps_gh_studio_token');
+  if (savedToken) {
+    authToken = savedToken;
+    try {
+      const [repos, user] = await Promise.all([
+        gh('/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member'),
+        gh('/user')
+      ]);
+      allRepos = repos;
+      currentUser = user;
+      document.getElementById('connDot').classList.add('on');
+      const accBtn = document.getElementById('accountBtn');
+      accBtn.innerHTML = `<img src="${escapeHtml(user.avatar_url)}">`;
+      accBtn.style.borderRadius = '50%';
+    } catch (err) {
+      // Token sauvegardé invalide/expiré/révoqué : on l'oublie proprement,
+      // sans bloquer le démarrage de l'app — l'utilisateur devra juste se
+      // reconnecter dans ce cas précis (token cassé, pas juste "app rouverte").
+      authToken = null;
+      localStorage.removeItem('nps_gh_studio_token');
+    }
+  }
+  navReset(renderRepos, 'Dépôts');
+})();
+</script>
+</body>
+</html>
